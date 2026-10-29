@@ -1,0 +1,38 @@
+services:
+  qdrant:
+    image: qdrant/qdrant:v1.20.0
+    restart: unless-stopped
+    ports:
+      # Optional: exposes the Qdrant dashboard at http://localhost:6339/dashboard.
+      # Not 6333, so it does not clash with a Qdrant you already run locally.
+      - "127.0.0.1:${QDRANT_PORT:-6339}:6333"
+    volumes:
+      - qdrant_data:/qdrant/storage
+    healthcheck:
+      test: ["CMD-SHELL", "bash -c ':> /dev/tcp/127.0.0.1/6333'"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  agent:
+    build: .
+    env_file: .env
+    environment:
+      # Set here (not in .env) so the bundled Qdrant is always the default.
+      # To use an external Qdrant, change this, e.g. http://host.docker.internal:6333
+      QDRANT_URL: http://qdrant:6333
+      DOCS_DIR: /data/documents
+    depends_on:
+      qdrant:
+        condition: service_healthy
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ./documents:/data/documents:ro
+    ports:
+      - "${AGENT_PORT:-7777}:7777"
+    stdin_open: true
+    tty: true
+
+volumes:
+  qdrant_data:

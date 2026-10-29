@@ -1,0 +1,24 @@
+# Secrets: never commit. Keep only the empty template.
+.env
+.env.*
+!.env.example
+
+# Internal documents (service/infra inventory)
+documents/*
+!documents/.gitkeep
+
+# Python / tooling
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
+
+# Local Qdrant data
+qdrant_data/
+qdrant_storage/
